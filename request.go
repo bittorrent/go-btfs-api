@@ -20,6 +20,7 @@ const (
 )
 
 type Request struct {
+	Ctx     context.Context
 	ApiBase string
 	Command string
 	Args    []string
@@ -38,6 +39,7 @@ func NewRequest(ctx context.Context, url, command string, args ...string) *Reque
 		"stream-channels": "true",
 	}
 	return &Request{
+		Ctx:     ctx,
 		ApiBase: url + "/api/" + API_VERSION,
 		Command: command,
 		Args:    args,
@@ -112,10 +114,12 @@ func (e *Error) Error() string {
 
 func (r *Request) Send(c *http.Client) (*Response, error) {
 	url := r.getURL()
-	req, err := http.NewRequest("POST", url, r.Body)
+	req0, err := http.NewRequest("POST", url, r.Body)
 	if err != nil {
 		return nil, err
 	}
+
+	req := req0.WithContext(r.Ctx)
 
 	// Add any headers that were supplied via the RequestBuilder.
 	for k, v := range r.Headers {
