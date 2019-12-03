@@ -14,10 +14,10 @@
 ## Install
 
 ```sh
-go get -u github.com/ipfs/go-ipfs-api
+go get -u github.com/TRON-US/go-btfs-api
 ```
 
-This will download the source into `$GOPATH/src/github.com/ipfs/go-ipfs-api`.
+This will download the source into `$GOPATH/src/github.com/TRON-US/go-btfs-api`.
 
 ## Usage
 
@@ -35,7 +35,7 @@ import (
 	"strings"
     	"os"
 
-    	shell "github.com/ipfs/go-ipfs-api"
+    	shell "github.com/TRON-US/go-btfs-api"
 )
 
 func main() {
@@ -50,11 +50,11 @@ func main() {
 }
 ```
 
-For a more complete example, please see: https://github.com/ipfs/go-ipfs-api/blob/master/tests/main.go
+For a more complete example, please see: https://github.com/TRON-US/go-btfs-api/blob/master/tests/main.go
 
 ## Contribute
 
-Contributions are welcome! Please check out the [issues](https://github.com/ipfs/go-ipfs-api/issues).
+Contributions are welcome! Please check out the [issues](https://github.com/TRON-US/go-btfs-api/issues).
 
 ### Want to hack on IPFS?
 
