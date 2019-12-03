@@ -5,7 +5,7 @@
 ## Install
 
 ```sh
-go get -u github.com/ipfs/go-btfs-api
+go get -u github.com/TRON-US/go-btfs-api
 ```
 
 This will download the source into `$GOPATH/src/github.com/TRON-US/go-btfs-api`.
@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"strings"
 	"os"
-
+	
 	shell "github.com/TRON-US/go-btfs-api"
 )
 
@@ -42,11 +42,15 @@ func main() {
 }
 ```
 
-For a more complete example, please see: https://github.com/ipfs/go-btfs-api/blob/master/tests/main.go
+For a more complete example, please see: https://github.com/TRON-US/go-btfs-api/blob/master/tests/main.go
 
 ## Contribute
 
-Contributions are welcome! Please check out the [issues](https://github.com/btfs/go-btfs-api/issues).
+Contributions are welcome! Please check out the [issues](https://github.com/TRON-US/go-btfs-api/issues).
+
+### Want to hack on IPFS?
+
+[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
 
 ## License
 
