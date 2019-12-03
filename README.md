@@ -48,10 +48,6 @@ For a more complete example, please see: https://github.com/TRON-US/go-btfs-api/
 
 Contributions are welcome! Please check out the [issues](https://github.com/TRON-US/go-btfs-api/issues).
 
-### Want to hack on IPFS?
-
-[![](https://cdn.rawgit.com/jbenet/contribute-ipfs-gif/master/img/contribute.gif)](https://github.com/ipfs/community/blob/master/contributing.md)
-
 ## License
 
 MIT
