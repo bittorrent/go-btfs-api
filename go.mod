@@ -6,8 +6,10 @@ require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/ipfs/go-ipfs-files v0.0.1
 	github.com/ipfs/go-ipfs-util v0.0.1
+	github.com/jpillora/backoff v1.0.0
 	github.com/libp2p/go-libp2p-metrics v0.1.0
 	github.com/libp2p/go-libp2p-peer v0.2.0
+	github.com/mediafly/retry v0.0.0-20200121235129-1c25c38c48cc
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/multiformats/go-multiaddr v0.0.4
 	github.com/multiformats/go-multiaddr-net v0.0.1

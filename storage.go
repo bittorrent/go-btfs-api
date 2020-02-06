@@ -114,10 +114,10 @@ func StorageLength(length int) StorageUploadOpts {
 	}
 }
 
-func getSessionSignature(hash string, peerId string) (string, time.Time) {
+func getSessionSignature(hash string) (string, time.Time) {
 	//offline session signature
 	now := time.Now()
-	sessionSignature := fmt.Sprintf("%s:%s:%s", utils.PeerId , hash ,"time.Now().String()")
+	sessionSignature := fmt.Sprintf("%s:%s:%s", utils.PeerId , hash ,now.String())
 	return sessionSignature, now
 }
 
@@ -131,8 +131,8 @@ func (s *Shell) StorageUpload(hash string) (string, error) {
 // Storage upload api.
 func (s *Shell) StorageUploadOffSign(hash string, options ...StorageUploadOpts) (string, error) {
 	var out storageUploadResponse
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
-	rb := s.Request("storage/upload", hash, utils.PeerId, "now.Weekday().String()", offlinePeerSessionSignature)
+	offlinePeerSessionSignature, now :=  getSessionSignature(hash)
+	rb := s.Request("storage/upload", hash, utils.PeerId, now.Weekday().String(), offlinePeerSessionSignature)
 	for _, option := range options {
 		_ = option(rb)
 	}
@@ -149,7 +149,7 @@ func (s *Shell) StorageUploadStatus(id string) (Storage, error) {
 // Storage upload get offline contract batch api.
 func (s *Shell) StorageUploadGetContractBatch(id string, hash string, sessionStatus string) (Contracts, error) {
 	var out Contracts
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 	rb := s.Request("storage/upload/getcontractbatch", id, utils.PeerId, "now.Weekday().String()", offlinePeerSessionSignature, sessionStatus)
 	return out, rb.Exec(context.Background(), &out)
 }
@@ -157,7 +157,7 @@ func (s *Shell) StorageUploadGetContractBatch(id string, hash string, sessionSta
 // Storage upload get offline unsigned data api.
 func (s *Shell) StorageUploadGetUnsignedData(id string, hash string, sessionStatus string) (UnsignedData, error) {
 	var out UnsignedData
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 	rb := s.Request("storage/upload/getunsigned", id, utils.PeerId, "now.Weekday().String()", offlinePeerSessionSignature, sessionStatus)
 	return out, rb.Exec(context.Background(), &out)
 }
@@ -167,7 +167,7 @@ func (s *Shell) StorageUploadSignBatch(id string, hash string, unsignedBatchCont
 	var out []byte
 	var signedBatchContracts *Contracts
 	var errSign error
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 
 	if utils.PrivateKey != "" {
 		signedBatchContracts, errSign = unsignedBatchContracts.SignContracts(utils.PrivateKey)
@@ -188,7 +188,7 @@ func (s *Shell) StorageUploadSignBatch(id string, hash string, unsignedBatchCont
 func (s *Shell) StorageUploadSign(id string, hash string, unsignedData UnsignedData, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 	if utils.PrivateKey != "" {
 		signedBytes, err := unsignedData.SignData(utils.PrivateKey)
 		if err != nil {
@@ -203,7 +203,7 @@ func (s *Shell) StorageUploadSign(id string, hash string, unsignedData UnsignedD
 func (s *Shell) StorageUploadSignBalance(id string,  hash string, unsignedData UnsignedData, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 	if utils.PrivateKey != "" {
 		ledgerSignedPublicKey, err := unsignedData.SignBalanceData(utils.PrivateKey)
 		if err != nil {
@@ -218,7 +218,7 @@ func (s *Shell) StorageUploadSignBalance(id string,  hash string, unsignedData U
 func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData UnsignedData, sessionStatus string, totalPrice int64) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, now :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, now :=  getSessionSignature(hash)
 	if utils.PrivateKey != "" {
 		chanCommit := &ledgerpb.ChannelCommit{
 			Amount: totalPrice, PayerId:now.UnixNano(),
@@ -247,7 +247,7 @@ func (s *Shell) StorageUploadSignPayChannel(id, hash string, unsignedData Unsign
 func (s *Shell) StorageUploadSignPayRequest(id, hash string, unsignedData UnsignedData, sessionStatus string) ([]byte, error) {
 	var out []byte
 	var rb *RequestBuilder
-	offlinePeerSessionSignature, _ :=  getSessionSignature(hash, utils.PeerId)
+	offlinePeerSessionSignature, _ :=  getSessionSignature(hash)
 	if utils.PrivateKey != "" {
 		result := &escrowpb.SignedSubmitContractResult{}
 		err := proto.Unmarshal([]byte(unsignedData.Unsigned), result)

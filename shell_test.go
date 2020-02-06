@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"log"
 	"sort"
 	"strings"
 	"testing"
@@ -15,6 +16,8 @@ import (
 	"github.com/TRON-US/go-btfs-api/utils"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"
+	"github.com/jpillora/backoff"
+	"github.com/mediafly/retry"
 )
 
 const (
@@ -396,20 +399,66 @@ func randBytes(size int) []byte {
 }
 
 func TestStorageUpload(t *testing.T) {
+
+	var storage Storage
+	var b = &backoff.Backoff{
+		Min:    1 * time.Second,
+		Factor: 2,
+		Jitter: false,
+	}
+
+
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
 	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
-	sessionId, err := s.StorageUpload(mhash)
-	is.Nil(err)
+	var sessionId string
 
-	var storage Storage
+	optionsUpload := retry.Options{
+		Do: func() retry.Result {
+			sessionId, err = s.StorageUpload(mhash)
+			if err != nil {
+				duration := b.Duration()
+				fmt.Println("Retrying upload command in " , duration.Seconds(), "s")
+				time.Sleep(duration)
+				return retry.Continue(err)
+			} else {
+				return retry.Stop()
+			}
+		},
+		MaxAttempts: 10,
+	}
+
+	if err := retry.Do(optionsUpload); err != nil {
+		log.Println("Upload command retry failed:", err)
+		is.Nil(err)
+	}
+
+	optionsStatus := retry.Options{
+		Do: func() retry.Result {
+			storage, err = s.StorageUploadStatus(sessionId)
+			if err != nil {
+				duration := b.Duration()
+				fmt.Println("Retrying status command in " , duration.Seconds(), "s")
+				time.Sleep(duration)
+				return retry.Continue(err)
+			} else {
+				return retry.Stop()
+			}
+		},
+		MaxAttempts: 10,
+	}
+
 LOOP:
 	for {
-		storage, err := s.StorageUploadStatus(sessionId)
-		is.Nil(err)
+
+		if err := retry.Do(optionsStatus); err != nil {
+			log.Println("Status command retry failed:", err)
+			is.Nil(err)
+			break LOOP
+		}
 		switch storage.Status {
 		case "complete":
 			fmt.Printf("%#v\n", storage.Status)
@@ -417,6 +466,16 @@ LOOP:
 		case "error":
 			fmt.Printf("%#v, %#v\n", storage.Status, storage.Message)
 			t.Fatal(fmt.Errorf("%s", storage.Message))
+		case "initSignReadyForEscrow", "initSignReadyForGuard":
+			//getBatch
+			//signBatch
+			time.Sleep(time.Millisecond*5000)
+			continue
+		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
+			//getData
+			//sign
+			time.Sleep(time.Millisecond*5000)
+			continue
 		default:
 			fmt.Printf("%#v continue \n", storage.Status)
 			sleepMoment()

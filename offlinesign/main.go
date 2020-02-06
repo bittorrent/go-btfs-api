@@ -10,7 +10,6 @@ import (
 	shell "github.com/TRON-US/go-btfs-api"
 
 	"github.com/opentracing/opentracing-go/log"
-
 )
 
 func demoApp(demoState chan string){
@@ -19,24 +18,20 @@ func demoApp(demoState chan string){
 
 	localUrl := "http://localhost:5001"
 	//localUrl := "http://demo9518058.mockable.io/"
+
 	s := shell.NewShell(localUrl)
 
-	rand := utils.RandString(32)
+	mhash, _ := s.Add(bytes.NewBufferString(string(utils.RandString(15))), shell.Chunker("reed-solomon-1-1-256000"))
 
-	//upload a random data and retrieve the hash
-	mhash, err := s.Add(bytes.NewBufferString(rand), shell.OnlyHash(true))
+	sessionId, err := s.StorageUploadOffSign(mhash, shell.OfflineSignMode(true))
 	if err != nil {
 		log.Error(err)
 	}
 
-	//upload the hash
-	sessionId, err := s.StorageUploadOffSign(mhash)
-	if err != nil {
-		log.Error(err)
-	}
-
+	LOOP:
 	for {
 		//pool for offline signing status
+		time.Sleep(time.Second*10)
 		uploadResp, statusError := s.StorageUploadStatus(sessionId)
 		if statusError != nil {
 			log.Error(statusError)
@@ -44,7 +39,6 @@ func demoApp(demoState chan string){
 		switch uploadResp.Status {
 		case "uninitialized":
 			demoState <- uploadResp.Status
-			time.Sleep(time.Second*10)
 			continue
 		case "initSignReadyForEscrow", "initSignReadyForGuard":
 			demoState <- uploadResp.Status
@@ -53,7 +47,6 @@ func demoApp(demoState chan string){
 				log.Error(errorUnsignedContracts)
 			}
 			s.StorageUploadSignBatch(sessionId, mhash, batchContracts, uploadResp.Status)
-			time.Sleep(time.Second*10)
 			continue
 		case "balanceSignReady", "payChannelSignReady", "payRequestSignReady", "guardSignReady":
 			demoState <- uploadResp.Status
@@ -71,7 +64,6 @@ func demoApp(demoState chan string){
 			case "sign":
 				s.StorageUploadSign(sessionId, mhash, unsignedData, uploadResp.Status)
 			}
-			time.Sleep(time.Second*10)
 			continue
 		case "retrySignReady":
 			demoState <- uploadResp.Status
@@ -80,25 +72,21 @@ func demoApp(demoState chan string){
 				log.Error(errorUnsignedContracts)
 			}
 			s.StorageUploadSignBatch(sessionId, mhash, batchContracts, uploadResp.Status)
-			time.Sleep(time.Second*10)
 			continue
 		case "retrySignProcess":
 			demoState <- uploadResp.Status
-			time.Sleep(time.Second*10)
 			continue
 		case "init":
 			demoState <- uploadResp.Status
-			time.Sleep(time.Second*10)
 			continue
 		case "complete":
 			demoState <- uploadResp.Status
-			break
+			break LOOP
 		case "error":
 			demoState <- uploadResp.Status
 			log.Error(errors.New("errStatus: session experienced an error. stopping app"))
-			break
+			break LOOP
 		}
-		break
 	}
 }
 func main() {
