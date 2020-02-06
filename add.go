@@ -6,9 +6,9 @@ import (
 	"errors"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
-	"github.com/ipfs/go-ipfs-files"
+	files "github.com/ipfs/go-ipfs-files"
 )
 
 type object struct {
@@ -59,6 +59,22 @@ func RawLeaves(enabled bool) AddOpts {
 	}
 }
 
+// Hash allows for selecting the multihash type
+func Hash(hash string) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("hash", hash)
+		return nil
+	}
+}
+
+// CidVersion allows for selecting the CID version that ipfs should use.
+func CidVersion(version int) AddOpts {
+	return func(rb *RequestBuilder) error {
+		rb.Option("cid-version", version)
+		return nil
+	}
+}
+
 func (s *Shell) Add(r io.Reader, options ...AddOpts) (string, error) {
 	fr := files.NewReaderFile(r)
 	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry("", fr)})
@@ -104,7 +120,7 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(path.Base(dir), sf)})
+	slf := files.NewSliceDirectory([]files.DirEntry{files.FileEntry(filepath.Base(dir), sf)})
 	reader := files.NewMultiFileReader(slf, true)
 
 	resp, err := s.Request("add").

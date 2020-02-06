@@ -20,6 +20,7 @@ const (
 )
 
 type Request struct {
+	Ctx     context.Context
 	ApiBase string
 	Command string
 	Args    []string
@@ -116,6 +117,8 @@ func (r *Request) Send(c *http.Client) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	req = req.WithContext(r.Ctx)
 
 	// Add any headers that were supplied via the RequestBuilder.
 	for k, v := range r.Headers {

@@ -32,6 +32,14 @@ func TestAdd(t *testing.T) {
 	mhash, err := s.Add(bytes.NewBufferString("Hello IPFS Shell tests"))
 	is.Nil(err)
 	is.Equal(mhash, "QmUfZ9rAdhV5ioBzXKdUTh2ZNsz9bzbkaLVyQ8uc8pj21F")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), Hash("sha3-256"))
+	is.Nil(err)
+	is.Equal(mhash, "bafkrmidz7cuqruceo2hocadpdjppcsi7qw6dypz3jhsae2qda6sexdk6z4")
+
+	mhash, err = s.Add(bytes.NewBufferString("Hello IPFS Shell tests"), CidVersion(1))
+	is.Nil(err)
+	is.Equal(mhash, "bafkreia5cxdsptovvt7qykfcrg4xlpaerart45pfn5di4rbivunybstmii")
 }
 
 func TestRedirect(t *testing.T) {
@@ -331,7 +339,7 @@ func TestDagPut(t *testing.T) {
 
 	c, err := s.DagPut(`{"x": "abc","y":"def"}`, "json", "cbor")
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestDagPutWithOpts(t *testing.T) {
@@ -340,7 +348,7 @@ func TestDagPutWithOpts(t *testing.T) {
 
 	c, err := s.DagPutWithOpts(`{"x": "abc","y":"def"}`, options.Dag.Pin("true"))
 	is.Nil(err)
-	is.Equal(c, "zdpuAt47YjE9XTgSxUBkiYCbmnktKajQNheQBGASHj3FfYf8M")
+	is.Equal(c, "bafyreidrm3r2k6vlxqp2fk47sboeycf7apddib47w7cyagrajtpaxxl2pi")
 }
 
 func TestStatsBW(t *testing.T) {
