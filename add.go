@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/ipfs/go-ipfs-files"
+	files "github.com/ipfs/go-ipfs-files"
 )
 
 type object struct {
@@ -110,6 +110,44 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	resp, err := s.Request("add").
 		Option("recursive", true).
 		Body(reader).
+		Send(context.Background())
+	if err != nil {
+		return "", nil
+	}
+
+	defer resp.Close()
+
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+
+	dec := json.NewDecoder(resp.Output)
+	var final string
+	for {
+		var out object
+		err = dec.Decode(&out)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return "", err
+		}
+		final = out.Hash
+	}
+
+	if final == "" {
+		return "", errors.New("no results received")
+	}
+
+	return final, nil
+}
+
+// AddDirFromFileReader adds a directory by files multiFileReader.
+func (s *Shell) AddDirFromFileReader(fileDir *files.MultiFileReader) (string, error) {
+	resp, err := s.Request("add").
+		Option("recursive", true).
+		Option("chunker", "reed-solomon").
+		Body(fileDir).
 		Send(context.Background())
 	if err != nil {
 		return "", nil
