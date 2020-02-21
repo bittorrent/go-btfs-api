@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/TRON-US/go-btfs-api/options"
-	files "github.com/TRON-US/go-btfs-files"
 	"github.com/cheekybits/is"
+	files "github.com/ipfs/go-ipfs-files"
 )
 
 const (

@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	files "github.com/TRON-US/go-btfs-files"
+	files "github.com/ipfs/go-ipfs-files"
 )
 
 type object struct {
@@ -145,7 +145,7 @@ func (s *Shell) AddDir(dir string) (string, error) {
 // AddDirFromFileReader adds a directory by files multiFileReader.
 func (s *Shell) AddDirFromFileReader(fileDir *files.MultiFileReader) (string, error) {
 	resp, err := s.Request("add").
-		Option("chunker", "reed-solomon").
+		//Option("chunker", "reed-solomon").
 		Option("recursive", true).
 		Body(fileDir).
 		Send(context.Background())
