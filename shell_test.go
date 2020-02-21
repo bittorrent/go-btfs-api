@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/TRON-US/go-btfs-api/options"
+	files "github.com/TRON-US/go-btfs-files"
 	"github.com/cheekybits/is"
 )
 
@@ -110,6 +111,27 @@ func TestAddDir(t *testing.T) {
 	cid, err := s.AddDir("./testdata")
 	is.Nil(err)
 	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+}
+
+func TestAddDirFromFileReader(t *testing.T) {
+	i := is.New(t)
+	s := NewShell(shellUrl)
+
+	slf := files.NewMapDirectory(map[string]files.Node{
+		"test": files.NewMapDirectory(map[string]files.Node{
+			"file1": files.NewBytesFile([]byte("test1")),
+			"file2": files.NewBytesFile([]byte("test2")),
+			"file3": files.NewBytesFile([]byte("test3")),
+			"file4": files.NewBytesFile([]byte("test4")),
+		}),
+	})
+
+	reader := files.NewMultiFileReader(slf, true)
+
+	cid, err := s.AddDirFromFileReader(reader)
+	i.Nil(err)
+
+	fmt.Println(cid)
 }
 
 func TestLocalShell(t *testing.T) {

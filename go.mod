@@ -1,6 +1,7 @@
 module github.com/TRON-US/go-btfs-api
 
 require (
+	github.com/TRON-US/go-btfs-files v0.1.5
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927
 	github.com/ipfs/go-ipfs-files v0.0.1
 	github.com/ipfs/go-ipfs-util v0.0.1
