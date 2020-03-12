@@ -13,14 +13,16 @@ import (
 
 	"github.com/TRON-US/go-btfs-api/options"
 	"github.com/TRON-US/go-btfs-api/utils"
+	files "github.com/TRON-US/go-btfs-files"
 	"github.com/cheekybits/is"
 	u "github.com/ipfs/go-ipfs-util"
-	files "github.com/TRON-US/go-btfs-files"
 )
 
 const (
 	examplesHash = "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv"
-	shellUrl     = "localhost:5001"
+	//shellUrl     = "localhost:5001"
+	shellUrl = "136.24.26.62:5001"
+	//shellUrl     = "10.10.0.57:5001"
 )
 
 func TestAdd(t *testing.T) {
@@ -467,7 +469,9 @@ func TestStorageUploadWithOnSign(t *testing.T) {
 	mhash, err := s.Add(bytes.NewBufferString(string(randBytes(is, 15))), Chunker("reed-solomon-1-1-256000"))
 	is.Nil(err)
 
-	sessionId, err := s.StorageUpload(mhash)
+	//sessionId, err := s.StorageUpload(mhash)
+	sessionId, err := s.StorageUpload(mhash, UploadMode("custom"),
+		Hosts(`16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc,16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc`))
 	is.Nil(err)
 
 	var storage *Storage
@@ -501,7 +505,9 @@ func TestStorageUploadWithOffSign(t *testing.T) {
 	is.Nil(err)
 
 	uts := s.GetUts()
-	sessionId, err := s.StorageUploadOffSign(mhash, uts)
+	//sessionId, err := s.StorageUploadOffSign(mhash, uts)
+	sessionId, err := s.StorageUploadOffSign(mhash, uts, UploadMode("custom"),
+		Hosts(`16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc,16Uiu2HAmJk2N7Fqa7CFSMxu6DS3taGVtH4dWkLxxZZuoLuwbSAjc`))
 	is.Nil(err)
 
 	//var storage Storage

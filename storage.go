@@ -3,6 +3,7 @@ package shell
 import (
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"strconv"
 	"time"
 
@@ -139,6 +140,12 @@ func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Cont
 			if err != nil {
 				return nil, err
 			}
+			if DEBUG {
+				err := verifyP2PMessage(signedContract, utils.GetPeerId())
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 		// This overwrites
 		str, err := cutils.BytesToString(signedContract, cutils.Base64)
@@ -152,6 +159,48 @@ func (c Contracts) SignContracts(privateKey string, sessionStatus string) (*Cont
 	}
 
 	return &c, nil
+}
+func UnmarshalGuardContract(marshaledBody []byte) (*guardpb.Contract, error) {
+	signedContract := &guardpb.Contract{}
+	err := proto.Unmarshal(marshaledBody, signedContract)
+	if err != nil {
+		return nil, err
+	}
+	return signedContract, nil
+}
+
+func verifyP2PMessage(signedContract []byte, offlinePeerId string) error {
+	halfSignedGuardContBytes := signedContract
+	halfSignedGuardContract, err := UnmarshalGuardContract(halfSignedGuardContBytes)
+	if err != nil {
+		fmt.Println("verifyP2PMessage error: UnmarshalG..")
+		return err
+	}
+
+	guardContractMeta := halfSignedGuardContract.ContractMeta
+
+	s := halfSignedGuardContract.GetRenterSignature()
+	if s == nil {
+		s = halfSignedGuardContract.GetPreparerSignature()
+	}
+	renterPid, err := peer.IDB58Decode(offlinePeerId)
+	if err != nil {
+		fmt.Println("verifyP2PMessage error: IDB58Decode..")
+		return err
+	}
+
+	payerPubKey, err := renterPid.ExtractPublicKey()
+	if err != nil {
+		fmt.Println("verifyP2PMessage error: ExtractPublicKey.")
+		return err
+	}
+
+	ok, err := crypto.Verify(payerPubKey, &guardContractMeta, s)
+	if !ok || err != nil {
+		fmt.Printf("verifyP2PMessage: can't verify guard contract: %v\n", err)
+		return fmt.Errorf("verifyP2PMessage: can't verify guard contract: %v", err)
+	}
+	return nil
 }
 
 // Set storage upload time.
@@ -248,6 +297,8 @@ func (s *Shell) StorageUploadSignBatch(sid string, hash string, unsignedBatchCon
 		sessionStatus, string(bytesSignBatch))
 	return rb.Exec(context.Background(), nil)
 }
+
+const DEBUG = true
 
 // Storage upload sign offline data api.
 func (s *Shell) StorageUploadSign(id string, hash string, unsignedData *UnsignedData, uts string, sessionStatus string) ([]byte, error) {
